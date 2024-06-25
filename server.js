@@ -12,7 +12,7 @@ const app = express();
 const port = 3000;
 
 // Initialize Google Generative AI with API key from environment variables
-const genAI = new GoogleGenerativeAI('AIzaSyBlLb4C8z8P4-y2qByi4GMewJXJAMZhPPg');
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
 // Middleware setup
 app.use(bodyParser.json());
