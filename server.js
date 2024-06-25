@@ -92,7 +92,7 @@ app.post('/api/postTweet', async (req, res) => {
 
 // Route to serve the HTML file
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + 'index.html');
 });
 
 // Start the server
