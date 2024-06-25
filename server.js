@@ -1,24 +1,17 @@
-
 require('dotenv').config();
-
-// Required modules
 const express = require('express');
 const bodyParser = require('body-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const puppeteer = require('puppeteer');
 
-// Initialize Express app
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Initialize Google Generative AI with API key from environment variables
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-// Middleware setup
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Route to handle API requests for generating response
 app.post('/api/generate', async (req, res) => {
   const userInput = req.body.input;
 
@@ -38,48 +31,31 @@ app.post('/api/postTweet', async (req, res) => {
   const tweetText = req.body.tweet;
 
   try {
-    const browser = await puppeteer.launch({
-      headless: false
-    });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-
+    
     await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
-
-    console.log('Waiting for username input...');
     await page.waitForSelector('input[name="text"]', { visible: true });
-    await page.type('input[name="text"]', 'YashSha73564414'); // Replace with your Twitter username
+    await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
     await page.keyboard.press('Enter');
-    await page.waitForSelector('input[name="text"]', { visible: true });
-    await page.type('input[name="text"]', 'yash11122er@gmail.com'); // Replace with your Twitter username
-    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000); // Wait for username input field
 
-    console.log('Waiting for password input...');
+    await page.type('input[name="text"]', process.env.TWITTER_EMAIL);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000); // Wait for email input field
+
     await page.waitForSelector('input[name="password"]', { visible: true });
-    await page.type('input[name="password"]', 'yshah123r'); // Replace with your Twitter password
+    await page.type('input[name="password"]', process.env.TWITTER_PASSWORD);
     await page.keyboard.press('Enter');
-
-    console.log('Waiting for navigation after login...');
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-    console.log('Login successful!');
-
-    console.log('Attempting to post tweet...');
-
-    // Wait for the tweet text area to become visible on the page
     const tweetTextareaSelector = 'div[data-testid="tweetTextarea_0"]';
     await page.waitForSelector(tweetTextareaSelector, { visible: true });
-
-    // Type the tweet text into the text area
     await page.type(tweetTextareaSelector, tweetText);
 
-    // Wait for the tweet button to become visible on the page
-    const tweetButtonSelector = 'button[data-testid="tweetButtonInline"]';
+    const tweetButtonSelector = 'div[data-testid="tweetButtonInline"]';
     await page.waitForSelector(tweetButtonSelector, { visible: true });
-
-    // Click on the tweet button to post the tweet
     await page.click(tweetButtonSelector);
-
-    console.log('Tweet posted successfully!');
 
     await browser.close();
 
@@ -90,12 +66,10 @@ app.post('/api/postTweet', async (req, res) => {
   }
 });
 
-// Route to serve the HTML file
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
